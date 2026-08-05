@@ -37,3 +37,96 @@
 ## 📖 About
 
 SumoChat AI is a modern AI-powered conversational platform inspired by Google Gemini. It provides secure authentication, intelligent conversations, persistent chat history, user profile management, avatar uploads, and a clean, responsive interface designed for a seamless AI chat experience.
+
+<p align="center">
+
+<img src="https://github-readme-stats.vercel.app/api?username=Sumit-Yadav2611&show_icons=true&theme=tokyonight"/>
+
+</p>
+
+<p align="center">
+
+<img src="https://github-readme-streak-stats.herokuapp.com/?user=Sumit-Yadav2611&theme=tokyonight"/>
+
+</p>
+
+
+
+
+## 🏗️ System Architecture
+
+```text
+                           User
+                             │
+                             ▼
+                    React Frontend (Vite)
+                             │
+                             ▼
+                  React Context API
+                             │
+                             ▼
+                    Axios HTTP Client
+                             │
+                             ▼
+                Express.js REST API Server
+                ┌────────────┴────────────┐
+                │                         │
+                ▼                         ▼
+      JWT Authentication          Chat Controller
+                │                         │
+                ▼                         ▼
+          User Controller         Google Gemini API
+                │
+                ▼
+           MongoDB Atlas
+                │
+                ▼
+        User Data • Chat History
+```
+
+## 📂 Project Structure
+
+```text
+SumoChat-AI
+│
+├── backend
+│   ├── config
+│   ├── controllers
+│   ├── middleware
+│   ├── models
+│   ├── routes
+│   ├── uploads
+│   ├── app.js
+│   └── server.js
+│
+├── frontend
+│   ├── public
+│   ├── src
+│   │   ├── components
+│   │   ├── context
+│   │   ├── pages
+│   │   ├── routes
+│   │   ├── services
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│
+├── assets
+│   └── banner.png
+│
+└── README.md
+```
+
+
+## ⚙️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Frontend | React 19, Vite, Tailwind CSS |
+| Backend | Node.js, Express.js |
+| Database | MongoDB Atlas |
+| Authentication | JWT, bcrypt |
+| AI | Google Gemini API |
+| File Upload | Multer |
+| State Management | React Context API |
+| Notifications | React Hot Toast |
+| HTTP Client | Axios |
