@@ -1,5 +1,4 @@
 const { generateResponse } = require("../services/geminiService");
-
 const chatController = async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -18,6 +17,7 @@ const chatController = async (req, res) => {
       success: true,
       reply,
     });
+
   } catch (error) {
   console.error("Gemini Error:", error);
 

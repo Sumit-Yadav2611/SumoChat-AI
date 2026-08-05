@@ -124,20 +124,32 @@ export const ChatProvider = ({ children }) => {
   };
 
   // Create new chat
-  const newChat = () => {
-    const id = Date.now();
+ const newChat = () => {
+  // Don't create another empty chat if one already exists
+  const existingEmptyChat = chats.find(
+    (chat) =>
+      chat.title === "New Chat" &&
+      (!chat.messages || chat.messages.length === 0)
+  );
 
-    const chat = {
-      id,
-      title: "New Chat",
-      messages: [],
-    };
+  if (existingEmptyChat) {
+    setCurrentChatId(existingEmptyChat.id);
+    setMessages(existingEmptyChat.messages || []);
+    return;
+  }
 
-    setChats((prev) => [chat, ...prev]);
+  const id = Date.now();
 
-    setCurrentChatId(id);
-    setMessages([]);
+  const chat = {
+    id,
+    title: "New Chat",
+    messages: [],
   };
+
+  setChats((prev) => [chat, ...prev]);
+  setCurrentChatId(id);
+  setMessages([]);
+};
 
   // Open chat
   const openChat = (chatId) => {

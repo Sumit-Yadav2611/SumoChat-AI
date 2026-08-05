@@ -1,21 +1,58 @@
-import Sidebar from "./components/Sidebar/Sidebar";
-import Navbar from "./components/Navbar/Navbar";
-import ChatWindow from "./components/Chat/ChatWindow";
-import PromptInput from "./components/Chat/PromptInput";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Chat from "./pages/Chat";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 function App() {
   return (
-    <div className="flex h-screen bg-[#131314] text-white">
-      <Sidebar />
+    <BrowserRouter>
 
-      <div className="flex flex-1 flex-col">
-        <Navbar />
+      <Routes>
 
-        <ChatWindow />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-        <PromptInput />
-      </div>
-    </div>
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
+
+    </BrowserRouter>
   );
 }
 
