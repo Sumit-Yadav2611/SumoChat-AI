@@ -2,10 +2,17 @@
   <img src="assets/banner.png" alt="SumoChat AI Banner" width="100%">
 </p>
 
-# 🚀 SumoChat AI
+<h1 align="center">🚀 SumoChat AI</h1>
 
-> **Modern AI Chat Platform powered by Google Gemini**
-> <p align="center">
+<p align="center">
+  <strong>Modern AI Chat Platform powered by Google Gemini</strong>
+</p>
+
+<p align="center">
+  Full-Stack AI Chat Application built with React, Node.js, Express, MongoDB, JWT Authentication and Google Gemini API.
+</p>
+
+<p align="center">
 
 <img src="https://img.shields.io/badge/Version-v1.0-blue?style=for-the-badge"/>
 
@@ -24,3 +31,9 @@
 <img src="https://img.shields.io/badge/TailwindCSS-4-38BDF8?style=for-the-badge&logo=tailwindcss"/>
 
 </p>
+
+---
+
+## 📖 About
+
+SumoChat AI is a modern AI-powered conversational platform inspired by Google Gemini. It provides secure authentication, intelligent conversations, persistent chat history, user profile management, avatar uploads, and a clean, responsive interface designed for a seamless AI chat experience.
