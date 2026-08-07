@@ -1,132 +1,258 @@
-<p align="center">
-  <img src="assets/banner.png" alt="SumoChat AI Banner" width="100%">
-</p>
-
-<h1 align="center">🚀 SumoChat AI</h1>
+# 🤖 SumoChat AI
 
 <p align="center">
-  <strong>Modern AI Chat Platform powered by Google Gemini</strong>
-</p>
-
-<p align="center">
-  Full-Stack AI Chat Application built with React, Node.js, Express, MongoDB, JWT Authentication and Google Gemini API.
+  <img src="./assets/banner.png" alt="SumoChat AI Banner" width="100%">
 </p>
 
 <p align="center">
 
-<img src="https://img.shields.io/badge/Version-v1.0-blue?style=for-the-badge"/>
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=node.js)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-green?logo=mongodb)
+![Gemini](https://img.shields.io/badge/Google-Gemini-blue?logo=google)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38BDF8?logo=tailwindcss)
 
-<img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react"/>
+</p>
 
-<img src="https://img.shields.io/badge/Node.js-22-339933?style=for-the-badge&logo=node.js"/>
-
-<img src="https://img.shields.io/badge/Express-5-black?style=for-the-badge&logo=express"/>
-
-<img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb"/>
-
-<img src="https://img.shields.io/badge/Google-Gemini-4285F4?style=for-the-badge"/>
-
-<img src="https://img.shields.io/badge/JWT-Authentication-red?style=for-the-badge"/>
-
-<img src="https://img.shields.io/badge/TailwindCSS-4-38BDF8?style=for-the-badge&logo=tailwindcss"/>
-
+<p align="center">
+A modern AI-powered conversational assistant inspired by Google Gemini and ChatGPT, featuring authentication, persistent chat history, PDF understanding, image analysis with Gemini Vision, and guest mode.
 </p>
 
 ---
 
-## 📖 About
+# ✨ Features
 
-SumoChat AI is a modern AI-powered conversational platform inspired by Google Gemini. It provides secure authentication, intelligent conversations, persistent chat history, user profile management, avatar uploads, and a clean, responsive interface designed for a seamless AI chat experience.
+## 💬 AI Chat
 
-<p align="center">
+- Google Gemini Integration
+- Fast AI Responses
+- Animated Typing Effect
+- Markdown Support
 
-<img src="https://github-readme-stats.vercel.app/api?username=Sumit-Yadav2611&show_icons=true&theme=tokyonight"/>
+---
 
-</p>
+## 👤 Authentication
 
-<p align="center">
+- User Registration
+- Secure Login
+- JWT Authentication
+- Protected Routes
+- Guest Mode
+- Free Guest Message Limit
 
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=Sumit-Yadav2611&theme=tokyonight"/>
+---
 
-</p>
+## 📚 Chat Management
 
+- Create New Chats
+- Rename Chats
+- Delete Chats
+- Search Chats
+- Persistent Chat History
+- Separate Chat History for Every User
 
+---
 
+## 📄 PDF Chat
 
-## 🏗️ System Architecture
+Upload any PDF and ask questions about it.
 
-```text
-                           User
-                             │
-                             ▼
-                    React Frontend (Vite)
-                             │
-                             ▼
-                  React Context API
-                             │
-                             ▼
-                    Axios HTTP Client
-                             │
-                             ▼
-                Express.js REST API Server
-                ┌────────────┴────────────┐
-                │                         │
-                ▼                         ▼
-      JWT Authentication          Chat Controller
-                │                         │
-                ▼                         ▼
-          User Controller         Google Gemini API
-                │
-                ▼
-           MongoDB Atlas
-                │
-                ▼
-        User Data • Chat History
+Examples:
+
+- Summarize this document
+- Explain page 5
+- What is the conclusion?
+- Find important points
+
+---
+
+## 🖼 Gemini Vision
+
+Upload an image and ask questions like:
+
+- What is in this image?
+- Describe this picture
+- Read all text
+- Explain this graph
+- Solve this math problem
+
+---
+
+## 👤 User Profile
+
+- Profile Page
+- Avatar Upload
+- Profile Picture Update
+
+---
+
+## 🎨 Modern UI
+
+- Responsive Design
+- Dark Theme
+- Sidebar
+- Navbar
+- Toast Notifications
+- Loading Animations
+
+---
+
+# 🏗 Tech Stack
+
+## Frontend
+
+- React
+- Tailwind CSS
+- React Router
+- Axios
+- React Hot Toast
+
+## Backend
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- Multer
+
+## AI
+
+- Google Gemini API
+- Gemini Vision
+
+---
+
+# 📂 Project Structure
+
+```
+SumoChat-AI/
+
+backend/
+│
+├── controllers/
+├── middleware/
+├── memory/
+├── models/
+├── routes/
+├── services/
+├── uploads/
+└── server.js
+
+frontend/
+│
+├── components/
+├── context/
+├── hooks/
+├── pages/
+├── routes/
+├── services/
+└── App.jsx
 ```
 
-## 📂 Project Structure
+---
 
-```text
-SumoChat-AI
-│
-├── backend
-│   ├── config
-│   ├── controllers
-│   ├── middleware
-│   ├── models
-│   ├── routes
-│   ├── uploads
-│   ├── app.js
-│   └── server.js
-│
-├── frontend
-│   ├── public
-│   ├── src
-│   │   ├── components
-│   │   ├── context
-│   │   ├── pages
-│   │   ├── routes
-│   │   ├── services
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│
-├── assets
-│   └── banner.png
-│
-└── README.md
+# 🚀 Current Features
+
+| Feature | Status |
+|----------|--------|
+| AI Chat | ✅ |
+| Authentication | ✅ |
+| Guest Mode | ✅ |
+| Chat History | ✅ |
+| Separate User Chats | ✅ |
+| PDF Chat | ✅ |
+| Gemini Vision | ✅ |
+| Avatar Upload | ✅ |
+| Search Chats | ✅ |
+
+---
+
+# 🚀 Upcoming Features
+
+- 🎤 Voice Chat
+- 🔊 AI Voice Responses
+- 🌐 Web Search Mode
+- 🧠 Memory Mode
+- 📷 Camera Capture
+- 📄 Multiple PDF Support
+- 🖼 Multiple Image Support
+- 🌙 Themes
+- 📤 Export Chat
+- ⭐ Favorite Chats
+- 📌 Pin Conversations
+
+---
+
+# ⚙ Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/Sumit-Yadav2611/SumoChat-AI.git
 ```
 
+Backend
 
-## ⚙️ Tech Stack
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-| Category | Technology |
-|----------|------------|
-| Frontend | React 19, Vite, Tailwind CSS |
-| Backend | Node.js, Express.js |
-| Database | MongoDB Atlas |
-| Authentication | JWT, bcrypt |
-| AI | Google Gemini API |
-| File Upload | Multer |
-| State Management | React Context API |
-| Notifications | React Hot Toast |
-| HTTP Client | Axios |
+Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+# 🔐 Environment Variables
+
+Create a `.env` file inside **backend**
+
+```env
+PORT=5000
+
+MONGO_URI=your_mongodb_uri
+
+JWT_SECRET=your_secret
+
+GEMINI_API_KEY=your_api_key
+```
+
+---
+
+# 📸 Screenshots
+
+Coming Soon...
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+Fork the repository and create a Pull Request.
+
+---
+
+# 👨‍💻 Developer
+
+**Sumit Yadav**
+
+B.Tech Computer Science & Engineering
+
+National Institute of Technology Patna
+
+---
+
+# ⭐ Show your support
+
+If you like this project,
+
+⭐ Star this repository.
