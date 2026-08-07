@@ -130,3 +130,17 @@ SumoChat-AI
 | State Management | React Context API |
 | Notifications | React Hot Toast |
 | HTTP Client | Axios |
+
+## ✨ Features
+
+- ✅ AI Chat (Gemini)
+- ✅ User Authentication
+- ✅ Guest Mode
+- ✅ Chat History
+- ✅ PDF Chat
+- ✅ Image Upload
+- ✅ Gemini Vision
+- 🔄 Voice Input (Coming Soon)
+- 🔄 AI Voice Response (Coming Soon)
+- 🔄 Web Search (Coming Soon)
+
