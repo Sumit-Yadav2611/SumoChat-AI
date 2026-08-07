@@ -29,13 +29,13 @@ const Login = () => {
     try {
       const res = await loginUser(form);
 
-      login(res.data.user, res.data.token);
+      login(res.user, res.token);
 
-      alert("Login Successful!");
+      toast.success("Login successful!");
 
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Login Failed");
+      toast.error(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }

@@ -11,9 +11,15 @@ import PublicRoute from "./routes/PublicRoute";
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
+        {/* Public Chat */}
+        <Route
+          path="/"
+          element={<Chat />}
+        />
+
+        {/* Login */}
         <Route
           path="/login"
           element={
@@ -23,6 +29,7 @@ function App() {
           }
         />
 
+        {/* Register */}
         <Route
           path="/register"
           element={
@@ -32,15 +39,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          }
-        />
-
+        {/* Protected Profile */}
         <Route
           path="/profile"
           element={
@@ -51,7 +50,6 @@ function App() {
         />
 
       </Routes>
-
     </BrowserRouter>
   );
 }

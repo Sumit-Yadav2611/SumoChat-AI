@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { sendPrompt } from "../services/chatService";
+import { useAuth } from "./AuthContext";
 
 // Create Context
 export const ChatContext = createContext();
@@ -7,20 +8,35 @@ export const ChatContext = createContext();
 // Provider Component
 export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
+  const { user, token } = useAuth();
 
-  // Load chats from localStorage
-  const [chats, setChats] = useState(() => {
-    const savedChats = localStorage.getItem("gemini_chats");
-    return savedChats ? JSON.parse(savedChats) : [];
-  });
+  const [uploadedImage, setUploadedImage] = useState(null);
+
+const isGuest = !token;
+
+// Unique storage key for each user
+const storageKey = user
+  ? `gemini_chats_${user.id}`
+  : "guest_chats";
+
+  // Load chats from clouded storage for logged-in users or local storage for guests
+  const [chats, setChats] = useState([]);
 
   // Current opened chat
   const [currentChatId, setCurrentChatId] = useState(null);
-
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  // Uploaded document
+  const [uploadedDocument, setUploadedDocument] = useState(null);
+  // Guest message limit
+  const FREE_MESSAGE_LIMIT = 3;
+
+  const [guestMessageCount, setGuestMessageCount] = useState(() => {
+    return Number(localStorage.getItem("guest_message_count")) || 0;
+  });
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
 
   // Animate AI response
   const animateResponse = async (reply) => {
@@ -57,11 +73,18 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+
+ 
   // Send Message
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
     const currentPrompt = input.trim();
+    // Guest limit check
+    if (isGuest && guestMessageCount >= FREE_MESSAGE_LIMIT) {
+      setShowLoginModal(true);
+      return;
+    }
 
     // Update title if first prompt
     setChats((prevChats) =>
@@ -77,7 +100,7 @@ export const ChatProvider = ({ children }) => {
         }
 
         return chat;
-      })
+      }),
     );
 
     // Add user + thinking
@@ -98,10 +121,19 @@ export const ChatProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const reply = await sendPrompt(currentPrompt);
+      const reply = await sendPrompt(currentPrompt,uploadedDocument);
 
+      
       // Remove thinking bubble
       setMessages((prev) => prev.slice(0, -1));
+
+      if (isGuest) {
+        const count = guestMessageCount + 1;
+
+        setGuestMessageCount(count);
+
+        localStorage.setItem("guest_message_count", count);
+      }
 
       // Animate assistant reply
       await animateResponse(reply);
@@ -113,7 +145,7 @@ export const ChatProvider = ({ children }) => {
 
         updated.push({
           role: "assistant",
-          content: "❌ Something went wrong.",
+          content: "Something went wrong.",
         });
 
         return updated;
@@ -124,32 +156,32 @@ export const ChatProvider = ({ children }) => {
   };
 
   // Create new chat
- const newChat = () => {
-  // Don't create another empty chat if one already exists
-  const existingEmptyChat = chats.find(
-    (chat) =>
-      chat.title === "New Chat" &&
-      (!chat.messages || chat.messages.length === 0)
-  );
+  const newChat = () => {
+    // Don't create another empty chat if one already exists
+    const existingEmptyChat = chats.find(
+      (chat) =>
+        chat.title === "New Chat" &&
+        (!chat.messages || chat.messages.length === 0),
+    );
 
-  if (existingEmptyChat) {
-    setCurrentChatId(existingEmptyChat.id);
-    setMessages(existingEmptyChat.messages || []);
-    return;
-  }
+    if (existingEmptyChat) {
+      setCurrentChatId(existingEmptyChat.id);
+      setMessages(existingEmptyChat.messages || []);
+      return;
+    }
 
-  const id = Date.now();
+    const id = Date.now();
 
-  const chat = {
-    id,
-    title: "New Chat",
-    messages: [],
+    const chat = {
+      id,
+      title: "New Chat",
+      messages: [],
+    };
+
+    setChats((prev) => [chat, ...prev]);
+    setCurrentChatId(id);
+    setMessages([]);
   };
-
-  setChats((prev) => [chat, ...prev]);
-  setCurrentChatId(id);
-  setMessages([]);
-};
 
   // Open chat
   const openChat = (chatId) => {
@@ -162,36 +194,49 @@ export const ChatProvider = ({ children }) => {
   };
 
   const deleteChat = (chatId) => {
-  const updatedChats = chats.filter((chat) => chat.id !== chatId);
+    const updatedChats = chats.filter((chat) => chat.id !== chatId);
 
-  setChats(updatedChats);
+    setChats(updatedChats);
 
-  // If deleted chat is currently open
-  if (currentChatId === chatId) {
-    if (updatedChats.length > 0) {
-      setCurrentChatId(updatedChats[0].id);
-      setMessages(updatedChats[0].messages || []);
-    } else {
-      setCurrentChatId(null);
-      setMessages([]);
+    // If deleted chat is currently open
+    if (currentChatId === chatId) {
+      if (updatedChats.length > 0) {
+        setCurrentChatId(updatedChats[0].id);
+        setMessages(updatedChats[0].messages || []);
+      } else {
+        setCurrentChatId(null);
+        setMessages([]);
+      }
     }
+  };
+
+  const renameChat = (chatId, newTitle) => {
+    if (!newTitle.trim()) return;
+
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              title: newTitle.trim(),
+            }
+          : chat,
+      ),
+    );
+  };
+
+  useEffect(() => {
+  const savedChats = localStorage.getItem(storageKey);
+
+  if (savedChats) {
+    setChats(JSON.parse(savedChats));
+  } else {
+    setChats([]);
   }
-};
 
-const renameChat = (chatId, newTitle) => {
-  if (!newTitle.trim()) return;
-
-  setChats((prev) =>
-    prev.map((chat) =>
-      chat.id === chatId
-        ? {
-            ...chat,
-            title: newTitle.trim(),
-          }
-        : chat
-    )
-  );
-};
+  setCurrentChatId(null);
+  setMessages([]);
+}, [storageKey]);
 
   // Sync messages with current chat
   useEffect(() => {
@@ -204,19 +249,22 @@ const renameChat = (chatId, newTitle) => {
               ...chat,
               messages,
             }
-          : chat
-      )
+          : chat,
+      ),
     );
   }, [messages, currentChatId]);
 
   // Save chats
-  useEffect(() => {
-    localStorage.setItem("gemini_chats", JSON.stringify(chats));
-  }, [chats]);
+ useEffect(() => {
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify(chats)
+  );
+}, [chats, storageKey]);
 
   const filteredChats = chats.filter((chat) =>
-  chat.title.toLowerCase().includes(searchQuery.toLowerCase())
-);
+    chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <ChatContext.Provider
@@ -229,7 +277,6 @@ const renameChat = (chatId, newTitle) => {
         loading,
         searchQuery,
         setSearchQuery,
-        
 
         setInput,
         setMessages,
@@ -241,6 +288,15 @@ const renameChat = (chatId, newTitle) => {
         openChat,
         deleteChat,
         renameChat,
+        showLoginModal,
+        setShowLoginModal,
+        guestMessageCount,
+        FREE_MESSAGE_LIMIT,
+        isGuest,
+        uploadedDocument,
+        setUploadedDocument,
+        uploadedImage,
+        setUploadedImage,
       }}
     >
       {children}
