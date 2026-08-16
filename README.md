@@ -309,37 +309,37 @@ SumoChat-AI/
 
 # 🚀 Current Features
 
-| Feature | Status |
-|---|:---:|
-| AI Chat | ✅ |
-| Google Gemini Integration | ✅ |
-| Authentication | ✅ |
-| JWT Authentication | ✅ |
-| Protected Routes | ✅ |
-| Guest Mode | ✅ |
-| Guest Free Message Limit | ✅ |
-| Chat History | ✅ |
-| Separate User Chats | ✅ |
-| New Chat | ✅ |
-| Rename Chat | ✅ |
-| Delete Chat | ✅ |
-| Search Chats | ✅ |
-| PDF Chat | ✅ |
-| Gemini Vision | ✅ |
-| Image Upload | ✅ |
-| Avatar Upload | ✅ |
-| User Profile | ✅ |
-| AI Image Generation | ✅ |
-| Cloudflare Workers AI | ✅ |
-| FLUX Image Generation | ✅ |
-| Image Preview | ✅ |
-| Image Viewer | ✅ |
-| Image Download | ✅ |
-| Copy Image Prompt | ✅ |
-| Image Persistence | ✅ |
-| Responsive UI | ✅ |
-| Markdown Rendering | ✅ |
-| Code Syntax Highlighting | ✅ |
+| Feature                   | Status |
+| ------------------------- | :----: |
+| AI Chat                   |   ✅   |
+| Google Gemini Integration |   ✅   |
+| Authentication            |   ✅   |
+| JWT Authentication        |   ✅   |
+| Protected Routes          |   ✅   |
+| Guest Mode                |   ✅   |
+| Guest Free Message Limit  |   ✅   |
+| Chat History              |   ✅   |
+| Separate User Chats       |   ✅   |
+| New Chat                  |   ✅   |
+| Rename Chat               |   ✅   |
+| Delete Chat               |   ✅   |
+| Search Chats              |   ✅   |
+| PDF Chat                  |   ✅   |
+| Gemini Vision             |   ✅   |
+| Image Upload              |   ✅   |
+| Avatar Upload             |   ✅   |
+| User Profile              |   ✅   |
+| AI Image Generation       |   ✅   |
+| Cloudflare Workers AI     |   ✅   |
+| FLUX Image Generation     |   ✅   |
+| Image Preview             |   ✅   |
+| Image Viewer              |   ✅   |
+| Image Download            |   ✅   |
+| Copy Image Prompt         |   ✅   |
+| Image Persistence         |   ✅   |
+| Responsive UI             |   ✅   |
+| Markdown Rendering        |   ✅   |
+| Code Syntax Highlighting  |   ✅   |
 
 ---
 
@@ -609,6 +609,41 @@ VITE_API_URL=https://your-backend-domain.com
 
 ---
 
+# 🧪 Testing Checklist
+
+Before deployment, verify:
+
+```text
+[ ] Register
+[ ] Login
+[ ] Logout
+[ ] Guest chat
+[ ] Guest free-message limit
+[ ] Create chat
+[ ] Send normal AI message
+[ ] Chat title updates
+[ ] Open old conversation
+[ ] Refresh conversation
+[ ] Rename chat
+[ ] Delete chat
+[ ] Search chats
+[ ] PDF upload
+[ ] PDF questions
+[ ] Image upload
+[ ] Gemini Vision
+[ ] Generate AI image
+[ ] Download generated image
+[ ] Open generated image
+[ ] Copy image prompt
+[ ] Refresh after image generation
+[ ] Generated image still appears
+[ ] Logout/login
+[ ] Previous conversations return
+[ ] User A cannot access User B's chats
+[ ] Mobile responsive UI
+```
+
+---
 
 # 🖼️ Screenshots
 
