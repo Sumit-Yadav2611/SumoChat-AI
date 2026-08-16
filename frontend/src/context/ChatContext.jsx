@@ -1,50 +1,78 @@
 import { createContext, useState, useEffect } from "react";
-import { sendPrompt } from "../services/chatService";
+
+import {
+  getChats,
+  createChat,
+  getChatMessages,
+  sendPrompt,
+  sendGuestPrompt,
+  generateImage,
+  renameChat as renameChatAPI,
+  deleteChat as deleteChatAPI,
+} from "../services/chatService";
+
 import { useAuth } from "./AuthContext";
 
-// Create Context
+// ============================================================
+// CREATE CONTEXT
+// ============================================================
+
 export const ChatContext = createContext();
 
-// Provider Component
 export const ChatProvider = ({ children }) => {
-  const [messages, setMessages] = useState([]);
   const { user, token } = useAuth();
 
-  const [uploadedImage, setUploadedImage] = useState(null);
+  // ============================================================
+  // CHAT STATE
+  // ============================================================
 
-const isGuest = !token;
-
-// Unique storage key for each user
-const storageKey = user
-  ? `gemini_chats_${user.id}`
-  : "guest_chats";
-
-  // Load chats from clouded storage for logged-in users or local storage for guests
+  const [messages, setMessages] = useState([]);
   const [chats, setChats] = useState([]);
-
-  // Current opened chat
   const [currentChatId, setCurrentChatId] = useState(null);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  // Uploaded document
+
+  // Prevent duplicate New Chat creation
+  const [creatingChat, setCreatingChat] = useState(false);
+
+  // ============================================================
+  // UPLOAD STATE
+  // ============================================================
+
   const [uploadedDocument, setUploadedDocument] = useState(null);
-  // Guest message limit
+  const [uploadedImage, setUploadedImage] = useState(null);
+
+  // ============================================================
+  // UI STATE
+  // ============================================================
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // ============================================================
+  // GUEST
+  // ============================================================
+
+  const isGuest = !token;
+
   const FREE_MESSAGE_LIMIT = 3;
 
   const [guestMessageCount, setGuestMessageCount] = useState(() => {
     return Number(localStorage.getItem("guest_message_count")) || 0;
   });
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const guestStorageKey = "guest_chats";
 
-  // Animate AI response
+  // ============================================================
+  // ANIMATE AI RESPONSE
+  // ============================================================
+
   const animateResponse = async (reply) => {
     if (!reply) return;
 
     const words = reply.split(" ");
 
-    // Add assistant message
     setMessages((prev) => [
       ...prev,
       {
@@ -63,8 +91,14 @@ const storageKey = user
       setMessages((prev) => {
         const updated = [...prev];
 
-        updated[updated.length - 1] = {
-          ...updated[updated.length - 1],
+        if (updated.length === 0) {
+          return prev;
+        }
+
+        const lastIndex = updated.length - 1;
+
+        updated[lastIndex] = {
+          ...updated[lastIndex],
           content: current,
         };
 
@@ -73,37 +107,281 @@ const storageKey = user
     }
   };
 
+  // ============================================================
+  // LOAD LOGGED-IN USER CHATS
+  // ============================================================
 
- 
-  // Send Message
+  useEffect(() => {
+    const loadUserChats = async () => {
+      if (!token || !user) return;
+
+      try {
+        const userChats = await getChats(token);
+
+        setChats(userChats || []);
+        setCurrentChatId(null);
+        setMessages([]);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+
+        setChats([]);
+        setCurrentChatId(null);
+        setMessages([]);
+      }
+    };
+
+    loadUserChats();
+  }, [token, user]);
+
+  // ============================================================
+  // LOAD GUEST CHATS
+  // ============================================================
+
+  useEffect(() => {
+    if (!isGuest) return;
+
+    try {
+      const savedChats = localStorage.getItem(guestStorageKey);
+
+      if (savedChats) {
+        const parsedChats = JSON.parse(savedChats);
+
+        setChats(parsedChats || []);
+      } else {
+        setChats([]);
+      }
+    } catch (error) {
+      console.error("Failed to load guest chats:", error);
+
+      setChats([]);
+    }
+
+    setCurrentChatId(null);
+    setMessages([]);
+  }, [isGuest]);
+
+  // ============================================================
+  // SAVE GUEST CHATS
+  // ============================================================
+
+  useEffect(() => {
+    if (!isGuest) return;
+
+    try {
+      localStorage.setItem(guestStorageKey, JSON.stringify(chats));
+    } catch (error) {
+      console.error("Failed to save guest chats:", error);
+    }
+  }, [chats, isGuest]);
+
+  // ============================================================
+  // CREATE NEW CHAT
+  // ============================================================
+
+  const newChat = async () => {
+    if (creatingChat) return;
+
+    // ========================================================
+    // GUEST
+    // ========================================================
+
+    if (isGuest) {
+      const existingEmptyChat = chats.find(
+        (chat) =>
+          chat.title === "New Chat" &&
+          (!chat.messages || chat.messages.length === 0),
+      );
+
+      if (existingEmptyChat) {
+        setCurrentChatId(existingEmptyChat.id);
+        setMessages(existingEmptyChat.messages || []);
+
+        setUploadedDocument(null);
+        setUploadedImage(null);
+
+        return;
+      }
+
+      const id = Date.now();
+
+      const chat = {
+        id,
+        title: "New Chat",
+        messages: [],
+      };
+
+      setChats((prev) => [chat, ...prev]);
+
+      setCurrentChatId(id);
+      setMessages([]);
+
+      setUploadedDocument(null);
+      setUploadedImage(null);
+
+      return;
+    }
+
+    // ========================================================
+    // LOGGED-IN USER
+    // ========================================================
+
+    const currentChat = chats.find((chat) => chat._id === currentChatId);
+
+    if (currentChat && currentChat.title === "New Chat") {
+      setMessages([]);
+
+      setUploadedDocument(null);
+      setUploadedImage(null);
+
+      return;
+    }
+
+    const existingEmptyChat = chats.find((chat) => chat.title === "New Chat");
+
+    if (existingEmptyChat) {
+      setCurrentChatId(existingEmptyChat._id);
+      setMessages([]);
+
+      setUploadedDocument(null);
+      setUploadedImage(null);
+
+      return;
+    }
+
+    try {
+      setCreatingChat(true);
+
+      const chat = await createChat(token);
+
+      setChats((prev) => [chat, ...prev]);
+
+      setCurrentChatId(chat._id);
+      setMessages([]);
+
+      setUploadedDocument(null);
+      setUploadedImage(null);
+    } catch (error) {
+      console.error("Failed to create new chat:", error);
+    } finally {
+      setCreatingChat(false);
+    }
+  };
+
+  // ============================================================
+  // OPEN CHAT
+  // ============================================================
+
+  const openChat = async (chatId) => {
+    if (!chatId) return;
+
+    // ========================================================
+    // GUEST
+    // ========================================================
+
+    if (isGuest) {
+      const chat = chats.find((c) => c.id === chatId);
+
+      if (!chat) return;
+
+      setCurrentChatId(chatId);
+
+      setMessages(chat.messages || []);
+
+      setUploadedDocument(null);
+      setUploadedImage(null);
+
+      return;
+    }
+
+    // ========================================================
+    // LOGGED-IN USER
+    // ========================================================
+
+    try {
+      setLoading(true);
+
+      const data = await getChatMessages(chatId, token);
+
+      setCurrentChatId(chatId);
+
+      setMessages(data.messages || []);
+
+      setUploadedDocument(null);
+      setUploadedImage(null);
+    } catch (error) {
+      console.error("Failed to open chat:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ============================================================
+  // IMAGE GENERATION DETECTION
+  // ============================================================
+
+  const isImageGenerationRequest = (prompt) => {
+    if (!prompt) return false;
+
+    const text = prompt.toLowerCase().trim();
+
+    const imagePatterns = [
+      /\bcreate\s+(an?\s+)?image\b/,
+      /\bgenerate\s+(an?\s+)?image\b/,
+      /\bmake\s+(an?\s+)?image\b/,
+      /\bdraw\b/,
+      /\bcreate\s+(an?\s+)?picture\b/,
+      /\bgenerate\s+(an?\s+)?picture\b/,
+    ];
+
+    return imagePatterns.some((pattern) => pattern.test(text));
+  };
+  // ============================================================
+  // SEND MESSAGE
+  // ============================================================
+
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
     const currentPrompt = input.trim();
-    // Guest limit check
+
+    // ========================================================
+    // GUEST LIMIT
+    // ========================================================
+
     if (isGuest && guestMessageCount >= FREE_MESSAGE_LIMIT) {
       setShowLoginModal(true);
       return;
     }
 
-    // Update title if first prompt
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id === currentChatId && chat.title === "New Chat") {
-          return {
-            ...chat,
-            title:
-              currentPrompt.length > 30
-                ? currentPrompt.slice(0, 30) + "..."
-                : currentPrompt,
-          };
-        }
+    // ========================================================
+    // MAKE SURE GUEST HAS A CHAT
+    // ========================================================
 
-        return chat;
-      }),
-    );
+    let activeChatId = currentChatId;
 
-    // Add user + thinking
+    if (isGuest && !activeChatId) {
+      const id = Date.now();
+
+      const newGuestChat = {
+        id,
+        title:
+          currentPrompt.length > 30
+            ? currentPrompt.slice(0, 30) + "..."
+            : currentPrompt,
+        messages: [],
+      };
+
+      setChats((prev) => [newGuestChat, ...prev]);
+
+      activeChatId = id;
+
+      setCurrentChatId(id);
+    }
+
+    // ========================================================
+    // ADD USER MESSAGE + THINKING
+    // ========================================================
+
     setMessages((prev) => [
       ...prev,
       {
@@ -121,31 +399,169 @@ const storageKey = user
     setLoading(true);
 
     try {
-      const reply = await sendPrompt(currentPrompt,uploadedDocument);
+      let reply;
 
-      
-      // Remove thinking bubble
+      // ======================================================
+      // IMAGE GENERATION
+      // ======================================================
+
+      const wantsImage = isImageGenerationRequest(currentPrompt);
+
+      if (wantsImage) {
+        try {
+          // ==================================================
+          // LOGGED-IN USER
+          // Make sure MongoDB chat exists BEFORE generating
+          // ==================================================
+
+          if (!isGuest && !activeChatId) {
+            const newChatData = await createChat(token);
+
+            activeChatId = newChatData._id;
+
+            setCurrentChatId(newChatData._id);
+
+            setChats((prev) => [newChatData, ...prev]);
+          }
+
+          // ==================================================
+          // GENERATE IMAGE
+          // ==================================================
+
+          const imageData = await generateImage(
+            currentPrompt,
+            activeChatId,
+            token,
+          );
+
+          // ==================================================
+          // REMOVE THINKING MESSAGE
+          // ==================================================
+
+          setMessages((prev) => prev.slice(0, -1));
+
+          // ==================================================
+          // ADD GENERATED IMAGE
+          // ==================================================
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              type: "image",
+              content: imageData.image,
+              mimeType: imageData.mimeType,
+              prompt: currentPrompt,
+            },
+          ]);
+
+          // ==================================================
+          // UPDATE CHAT TITLE
+          // ==================================================
+
+          if (imageData.chat) {
+            setChats((prev) =>
+              prev.map((chat) =>
+                chat._id === activeChatId ? imageData.chat : chat,
+              ),
+            );
+          }
+
+          return;
+        } catch (imageError) {
+          console.error("Image generation error:", imageError);
+
+          setMessages((prev) => {
+            const updated = prev.slice(0, -1);
+
+            updated.push({
+              role: "assistant",
+              content:
+                imageError.response?.data?.message ||
+                imageError.message ||
+                "Failed to generate image.",
+            });
+
+            return updated;
+          });
+
+          return;
+        }
+      }
+      // ======================================================
+      // GUEST
+      // ======================================================
+
+      if (isGuest) {
+        reply = await sendGuestPrompt(currentPrompt, uploadedDocument);
+      }
+
+      // ======================================================
+      // LOGGED-IN USER
+      // ======================================================
+      else {
+        // If there is no chat yet, create one first.
+        if (!activeChatId) {
+          const newChatData = await createChat(token);
+
+          activeChatId = newChatData._id;
+
+          setCurrentChatId(newChatData._id);
+
+          setChats((prev) => [newChatData, ...prev]);
+        }
+
+        const data = await sendPrompt(
+          activeChatId,
+          currentPrompt,
+          uploadedDocument,
+          token,
+        );
+
+        reply = data.reply;
+
+        // Update sidebar title
+        if (data.chat) {
+          setChats((prev) =>
+            prev.map((chat) => (chat._id === activeChatId ? data.chat : chat)),
+          );
+        }
+      }
+
+      // ======================================================
+      // REMOVE THINKING MESSAGE
+      // ======================================================
+
       setMessages((prev) => prev.slice(0, -1));
+
+      // ======================================================
+      // GUEST MESSAGE COUNT
+      // ======================================================
 
       if (isGuest) {
         const count = guestMessageCount + 1;
 
         setGuestMessageCount(count);
 
-        localStorage.setItem("guest_message_count", count);
+        localStorage.setItem("guest_message_count", count.toString());
       }
 
-      // Animate assistant reply
+      // ======================================================
+      // ANIMATE AI RESPONSE
+      // ======================================================
+
       await animateResponse(reply);
     } catch (error) {
-      console.error(error);
+      console.error("Send message error:", error);
 
       setMessages((prev) => {
         const updated = prev.slice(0, -1);
 
         updated.push({
           role: "assistant",
-          content: "Something went wrong.",
+          content:
+            error.response?.data?.message ||
+            "Something went wrong. Please try again.",
         });
 
         return updated;
@@ -155,146 +571,322 @@ const storageKey = user
     }
   };
 
-  // Create new chat
-  const newChat = () => {
-    // Don't create another empty chat if one already exists
-    const existingEmptyChat = chats.find(
-      (chat) =>
-        chat.title === "New Chat" &&
-        (!chat.messages || chat.messages.length === 0),
-    );
+  // ============================================================
+  // SEND MESSAGE TO CHAT
+  // Used by ChatWindow if it sends directly with a chat ID
+  // ============================================================
 
-    if (existingEmptyChat) {
-      setCurrentChatId(existingEmptyChat.id);
-      setMessages(existingEmptyChat.messages || []);
+  const sendMessageToChat = async (chatId, currentPrompt) => {
+    if (!currentPrompt?.trim() || loading) {
       return;
     }
 
-    const id = Date.now();
+    const prompt = currentPrompt.trim();
 
-    const chat = {
-      id,
-      title: "New Chat",
-      messages: [],
-    };
+    // ========================================================
+    // GUEST
+    // IMPORTANT:
+    // Guest does NOT require a MongoDB chat ID.
+    // ========================================================
 
-    setChats((prev) => [chat, ...prev]);
-    setCurrentChatId(id);
-    setMessages([]);
-  };
-
-  // Open chat
-  const openChat = (chatId) => {
-    const chat = chats.find((c) => c.id === chatId);
-
-    if (!chat) return;
-
-    setCurrentChatId(chatId);
-    setMessages(chat.messages || []);
-  };
-
-  const deleteChat = (chatId) => {
-    const updatedChats = chats.filter((chat) => chat.id !== chatId);
-
-    setChats(updatedChats);
-
-    // If deleted chat is currently open
-    if (currentChatId === chatId) {
-      if (updatedChats.length > 0) {
-        setCurrentChatId(updatedChats[0].id);
-        setMessages(updatedChats[0].messages || []);
-      } else {
-        setCurrentChatId(null);
-        setMessages([]);
+    if (isGuest) {
+      // Check guest limit first
+      if (guestMessageCount >= FREE_MESSAGE_LIMIT) {
+        setShowLoginModal(true);
+        return;
       }
+
+      // Create local guest chat if necessary
+      let activeChatId = chatId;
+
+      if (!activeChatId) {
+        activeChatId = Date.now();
+
+        const newGuestChat = {
+          id: activeChatId,
+          title: prompt.length > 30 ? prompt.slice(0, 30) + "..." : prompt,
+          messages: [],
+        };
+
+        setChats((prev) => [newGuestChat, ...prev]);
+
+        setCurrentChatId(activeChatId);
+      }
+
+      // Add user + thinking
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: prompt,
+        },
+        {
+          role: "assistant",
+          content: "",
+          loading: true,
+        },
+      ]);
+
+      setInput("");
+      setLoading(true);
+
+      try {
+        const reply = await sendGuestPrompt(prompt, uploadedDocument);
+
+        // Remove thinking
+        setMessages((prev) => prev.slice(0, -1));
+
+        // Increase guest count
+        const count = guestMessageCount + 1;
+
+        setGuestMessageCount(count);
+
+        localStorage.setItem("guest_message_count", count.toString());
+
+        // Animate reply
+        await animateResponse(reply);
+      } catch (error) {
+        console.error("Guest message error:", error);
+
+        setMessages((prev) => {
+          const updated = prev.slice(0, -1);
+
+          updated.push({
+            role: "assistant",
+            content:
+              error.response?.data?.message ||
+              "Something went wrong. Please try again.",
+          });
+
+          return updated;
+        });
+      } finally {
+        setLoading(false);
+      }
+
+      return;
+    }
+
+    // ========================================================
+    // LOGGED-IN USER
+    // ========================================================
+
+    if (!chatId) {
+      console.error("No chat ID available for logged-in user.");
+      return;
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: prompt,
+      },
+      {
+        role: "assistant",
+        content: "",
+        loading: true,
+      },
+    ]);
+
+    setInput("");
+    setLoading(true);
+
+    try {
+      const data = await sendPrompt(chatId, prompt, uploadedDocument, token);
+
+      // Remove thinking
+      setMessages((prev) => prev.slice(0, -1));
+
+      // Update chat in sidebar
+      if (data.chat) {
+        setChats((prev) =>
+          prev.map((chat) => (chat._id === chatId ? data.chat : chat)),
+        );
+      }
+
+      // Animate AI response
+      await animateResponse(data.reply);
+    } catch (error) {
+      console.error("Send message error:", error);
+
+      setMessages((prev) => {
+        const updated = prev.slice(0, -1);
+
+        updated.push({
+          role: "assistant",
+          content:
+            error.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        });
+
+        return updated;
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renameChat = (chatId, newTitle) => {
-    if (!newTitle.trim()) return;
+  // ============================================================
+  // DELETE CHAT
+  // ============================================================
 
-    setChats((prev) =>
-      prev.map((chat) =>
-        chat.id === chatId
-          ? {
-              ...chat,
-              title: newTitle.trim(),
-            }
-          : chat,
-      ),
-    );
+  const deleteChat = async (chatId) => {
+    // ========================================================
+    // GUEST
+    // ========================================================
+
+    if (isGuest) {
+      const updatedChats = chats.filter((chat) => chat.id !== chatId);
+
+      setChats(updatedChats);
+
+      if (currentChatId === chatId) {
+        if (updatedChats.length > 0) {
+          setCurrentChatId(updatedChats[0].id);
+
+          setMessages(updatedChats[0].messages || []);
+        } else {
+          setCurrentChatId(null);
+          setMessages([]);
+        }
+      }
+
+      return;
+    }
+
+    // ========================================================
+    // LOGGED-IN USER
+    // ========================================================
+
+    try {
+      await deleteChatAPI(chatId, token);
+
+      const updatedChats = chats.filter((chat) => chat._id !== chatId);
+
+      setChats(updatedChats);
+
+      if (currentChatId === chatId) {
+        setCurrentChatId(null);
+        setMessages([]);
+
+        setUploadedDocument(null);
+        setUploadedImage(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+    }
   };
 
-  useEffect(() => {
-  const savedChats = localStorage.getItem(storageKey);
+  // ============================================================
+  // RENAME CHAT
+  // ============================================================
 
-  if (savedChats) {
-    setChats(JSON.parse(savedChats));
-  } else {
-    setChats([]);
-  }
+  const renameChat = async (chatId, newTitle) => {
+    if (!newTitle || !newTitle.trim()) {
+      return;
+    }
 
-  setCurrentChatId(null);
-  setMessages([]);
-}, [storageKey]);
+    // ========================================================
+    // GUEST
+    // ========================================================
 
-  // Sync messages with current chat
-  useEffect(() => {
-    if (!currentChatId) return;
+    if (isGuest) {
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === chatId
+            ? {
+                ...chat,
+                title: newTitle.trim(),
+              }
+            : chat,
+        ),
+      );
 
-    setChats((prevChats) =>
-      prevChats.map((chat) =>
-        chat.id === currentChatId
-          ? {
-              ...chat,
-              messages,
-            }
-          : chat,
-      ),
-    );
-  }, [messages, currentChatId]);
+      return;
+    }
 
-  // Save chats
- useEffect(() => {
-  localStorage.setItem(
-    storageKey,
-    JSON.stringify(chats)
-  );
-}, [chats, storageKey]);
+    // ========================================================
+    // LOGGED-IN USER
+    // ========================================================
 
-  const filteredChats = chats.filter((chat) =>
-    chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+    try {
+      const updatedChat = await renameChatAPI(chatId, newTitle.trim(), token);
+
+      setChats((prev) =>
+        prev.map((chat) => (chat._id === chatId ? updatedChat : chat)),
+      );
+    } catch (error) {
+      console.error("Failed to rename chat:", error);
+    }
+  };
+
+  // ============================================================
+  // SEARCH
+  // ============================================================
+
+  const filteredChats = chats.filter((chat) => {
+    const title = chat.title || "New Chat";
+
+    return title.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  // ============================================================
+  // PROVIDER
+  // ============================================================
 
   return (
     <ChatContext.Provider
       value={{
+        // Messages
         messages,
+        setMessages,
+
+        // Chats
         chats,
+        setChats,
         filteredChats,
+
+        // Current chat
         currentChatId,
+        setCurrentChatId,
+
+        // Input
         input,
+        setInput,
+
+        // Loading
         loading,
+
+        // Creating chat
+        creatingChat,
+
+        // Search
         searchQuery,
         setSearchQuery,
 
-        setInput,
-        setMessages,
-        setChats,
-        setCurrentChatId,
-
+        // Actions
         sendMessage,
+        sendMessageToChat,
         newChat,
         openChat,
+
         deleteChat,
         renameChat,
+
+        // Login modal
         showLoginModal,
         setShowLoginModal,
+
+        // Guest
         guestMessageCount,
         FREE_MESSAGE_LIMIT,
         isGuest,
+
+        // Uploads
         uploadedDocument,
         setUploadedDocument,
+
         uploadedImage,
         setUploadedImage,
       }}

@@ -62,7 +62,8 @@ export const getChatMessages = async (
 };
 
 // ============================================================
-// SEND MESSAGE TO A SPECIFIC CHAT
+// SEND MESSAGE TO SPECIFIC CHAT
+// LOGGED-IN USER
 // ============================================================
 
 export const sendPrompt = async (
@@ -87,22 +88,36 @@ export const sendPrompt = async (
 };
 
 // ============================================================
+// GUEST MESSAGE
+// ============================================================
+
+export const sendGuestPrompt = async (
+  prompt,
+  document
+) => {
+  const response = await axios.post(
+    `${API_URL}/guest`,
+    {
+      prompt,
+      document,
+    }
+  );
+
+  return response.data.reply;
+};
+
+// ============================================================
 // GENERATE IMAGE
-// LOGGED-IN USER
 // ============================================================
 
 export const generateImage = async (
-  prompt,
-  chatId,
-  token
+  prompt
 ) => {
   const response = await axios.post(
     `${IMAGE_API_URL}/generate`,
     {
       prompt,
-      chatId,
-    },
-    getAuthConfig(token)
+    }
   );
 
   return {
@@ -110,7 +125,6 @@ export const generateImage = async (
     mimeType:
       response.data.mimeType ||
       "image/jpeg",
-    chat: response.data.chat || null,
   };
 };
 
@@ -148,43 +162,4 @@ export const renameChat = async (
   );
 
   return response.data.chat;
-};
-
-// ============================================================
-// GUEST MESSAGE
-// ============================================================
-
-export const sendGuestPrompt = async (
-  prompt,
-  document
-) => {
-  const guestURL =
-    "http://localhost:5000/api/chat/guest";
-
-  console.log(
-    "================================="
-  );
-
-  console.log(
-    "🔥 GUEST FUNCTION EXECUTED"
-  );
-
-  console.log(
-    "🔥 GUEST URL:",
-    guestURL
-  );
-
-  console.log(
-    "================================="
-  );
-
-  const response = await axios.post(
-    guestURL,
-    {
-      prompt,
-      document,
-    }
-  );
-
-  return response.data.reply;
 };

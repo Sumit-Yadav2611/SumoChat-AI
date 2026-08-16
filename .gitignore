@@ -48,3 +48,7 @@ backend/uploads/*
 # ==========================
 coverage/
 .cache/
+# ==========================
+# Generated Test Files
+# ==========================
+backend/cloudflare-test-image.jpg
