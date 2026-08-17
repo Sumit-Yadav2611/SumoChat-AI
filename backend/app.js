@@ -90,13 +90,43 @@ app.use(
 );
 
 // ============================================================
-// TEST ROUTE
+// API HEALTH CHECK
 // ============================================================
 
-app.get("/", (req, res) => {
-  res.send(
-    "Backend is running successfully 🚀"
-  );
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "SumoChat AI backend is running",
+  });
+});
+
+// ============================================================
+// SERVE FRONTEND
+// ============================================================
+
+const frontendPath = path.join(
+  __dirname,
+  "../frontend/dist"
+);
+
+app.use(express.static(frontendPath));
+
+// ============================================================
+// REACT SPA FALLBACK
+// ============================================================
+
+app.use((req, res, next) => {
+  if (
+    req.method === "GET" &&
+    !req.path.startsWith("/api/") &&
+    !req.path.startsWith("/uploads/")
+  ) {
+    return res.sendFile(
+      path.join(frontendPath, "index.html")
+    );
+  }
+
+  next();
 });
 
 // ============================================================

@@ -417,7 +417,7 @@ npm run dev
 The backend will run on:
 
 ```text
-http://localhost:5000
+http://import.meta.env.VITE_API_URL
 ```
 
 ---
@@ -445,7 +445,7 @@ frontend/.env
 Add:
 
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://import.meta.env.VITE_API_URL
 ```
 
 Start the frontend:
@@ -497,7 +497,7 @@ frontend/.env
 ```
 
 ```env
-VITE_API_URL=http://localhost:5000
+http://localhost:5000
 ```
 
 ---

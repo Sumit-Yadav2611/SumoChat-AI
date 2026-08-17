@@ -1,10 +1,8 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/chat";
+const API_URL = "/api/chat";
 
-const IMAGE_API_URL =
-  "http://localhost:5000/api/image-generation";
-
+const IMAGE_API_URL = "/api/image-generation";
 // ============================================================
 // GET AUTH HEADER
 // ============================================================
@@ -108,8 +106,7 @@ export const generateImage = async (
   return {
     image: response.data.image,
     mimeType:
-      response.data.mimeType ||
-      "image/jpeg",
+      response.data.mimeType || "image/jpeg",
     chat: response.data.chat || null,
   };
 };
@@ -158,8 +155,7 @@ export const sendGuestPrompt = async (
   prompt,
   document
 ) => {
-  const guestURL =
-    "http://localhost:5000/api/chat/guest";
+   const guestURL = "/api/chat/guest";
 
   console.log(
     "================================="

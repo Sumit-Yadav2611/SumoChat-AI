@@ -27,9 +27,7 @@ function UserAvatar({
     : 0;
 
   // Backend URL
-  const avatarUrl = user?.avatar
-    ? `http://localhost:5000${user.avatar}`
-    : null;
+ const avatarUrl = user?.avatar || null;
 
   return (
     <div

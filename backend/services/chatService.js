@@ -1,10 +1,13 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/chat";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/chat`;
 
 const IMAGE_API_URL =
-  "http://localhost:5000/api/image-generation";
+  `${import.meta.env.VITE_API_URL}/api/image-generation`;
 
+
+const guestURL =
+  `${import.meta.env.VITE_API_URL}/api/chat/guest`;  
 // ============================================================
 // GET AUTH HEADER
 // ============================================================

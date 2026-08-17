@@ -14,7 +14,7 @@ const uploadImage = async (req, res) => {
       fileName: req.file.originalname,
       filePath: req.file.path,
       mimeType: req.file.mimetype,
-      url: `http://localhost:5000/uploads/images/${req.file.filename}`,
+      url: `/uploads/images/${req.file.filename}`,
     };
 
     // Save current image in memory

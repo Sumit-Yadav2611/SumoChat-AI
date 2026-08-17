@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/image",
+  baseURL: "/api/image",
 });
 
 export const uploadImage = async (file) => {

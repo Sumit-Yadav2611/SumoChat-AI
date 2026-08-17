@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/user";
+const API = "/api/user";
 
 export const uploadAvatar = async (file, token) => {
   const formData = new FormData();
